@@ -2,8 +2,11 @@ import axios from 'axios'
 import i18n from '../i18n'
 
 // 创建axios实例
+// 注意：baseURL 使用空串（同源相对路径），由 Vite 代理(开发)或反向代理(生产)转发到后端。
+// 详见 vite.config.js 中的 server.proxy['/api'] 配置。
+// 如需指向独立的后端域名，可通过 VITE_API_BASE_URL 环境变量覆盖。
 const service = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
   timeout: 300000, // 5分钟超时（本体生成可能需要较长时间）
   headers: {
     'Content-Type': 'application/json'
