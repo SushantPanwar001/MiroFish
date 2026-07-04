@@ -84,6 +84,7 @@ import GraphPanel from '../components/GraphPanel.vue'
 import Step1GraphBuild from '../components/Step1GraphBuild.vue'
 import Step2EnvSetup from '../components/Step2EnvSetup.vue'
 import { generateOntology, getProject, buildGraph, getTaskStatus, getGraphData } from '../api/graph'
+import { extractErrorMessage } from '../api/index'
 import { getPendingUpload, clearPendingUpload } from '../store/pendingUpload'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
@@ -224,8 +225,10 @@ const handleNewProject = async () => {
       addLog(`Error generating ontology: ${error.value}`)
     }
   } catch (err) {
-    error.value = err.message
-    addLog(`Exception in handleNewProject: ${err.message}`)
+    const msg = extractErrorMessage(err)
+    error.value = msg
+    addLog(`Exception in handleNewProject: ${msg}`)
+    console.error('handleNewProject failed:', err)
   } finally {
     loading.value = false
   }

@@ -41,13 +41,13 @@ class LLMClient:
     ) -> str:
         """
         发送聊天请求
-        
+
         Args:
             messages: 消息列表
             temperature: 温度参数
             max_tokens: 最大token数
             response_format: 响应格式（如JSON模式）
-            
+
         Returns:
             模型响应文本
         """
@@ -57,11 +57,25 @@ class LLMClient:
             "temperature": temperature,
             "max_tokens": max_tokens,
         }
-        
+
         if response_format:
             kwargs["response_format"] = response_format
-        
-        response = self.client.chat.completions.create(**kwargs)
+
+        try:
+            response = self.client.chat.completions.create(**kwargs)
+        except Exception as e:
+            # 部分兼容层（如 Google Gemini 的 OpenAI 适配端点）不接受 response_format
+            # 或 temperature 等 OpenAI 专有参数，会以 400/500 失败。
+            # 这里做一次降级重试：去掉 response_format 后再试。
+            msg = str(e).lower()
+            if response_format and ('response_format' in msg or 'json' in msg
+                                    or '400' in msg or '500' in msg
+                                    or 'internal' in msg or 'invalid' in msg):
+                kwargs.pop('response_format', None)
+                response = self.client.chat.completions.create(**kwargs)
+            else:
+                raise
+
         content = response.choices[0].message.content
         # 部分模型（如MiniMax M2.5）会在content中包含<think>思考内容，需要移除
         content = re.sub(r'<think>[\s\S]*?</think>', '', content).strip()

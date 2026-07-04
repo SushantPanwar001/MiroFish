@@ -248,6 +248,7 @@ def generate_ontology():
         })
         
     except Exception as e:
+        logger.exception(f"生成本体定义失败: {e}")
         return jsonify({
             "success": False,
             "error": str(e),

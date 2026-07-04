@@ -55,14 +55,31 @@ service.interceptors.response.use(
   }
 )
 
+// 从 axios 错误中提取最详细的错误信息（包括后端返回的 error/traceback）
+export const extractErrorMessage = (error) => {
+  if (!error) return 'Unknown error'
+  const data = error.response && error.response.data
+  if (data) {
+    if (typeof data === 'string') return data
+    if (data.error) return data.error
+    if (data.message) return data.message
+  }
+  if (error.message) return error.message
+  return 'Unknown error'
+}
+
 // 带重试的请求函数
 export const requestWithRetry = async (requestFn, maxRetries = 3, delay = 1000) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await requestFn()
     } catch (error) {
+      // 4xx 客户端错误（含 400/422）不重试——重试只会重复相同的失败
+      if (error.response && error.response.status >= 400 && error.response.status < 500) {
+        throw error
+      }
       if (i === maxRetries - 1) throw error
-      
+
       console.warn(`Request failed, retrying (${i + 1}/${maxRetries})...`)
       await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
     }
