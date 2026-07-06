@@ -214,10 +214,11 @@ class OntologyGenerator:
         ]
         
         # 调用LLM
+        # 注意：不显式传 max_tokens，使用 Config.LLM_MAX_TOKENS 默认值。
+        # 推理类模型（deepseek-v4-flash-free 等）需要更大的 token 预算。
         result = self.llm_client.chat_json(
             messages=messages,
             temperature=0.3,
-            max_tokens=4096
         )
         
         # 验证和后处理

@@ -31,6 +31,12 @@ class Config:
     LLM_API_KEY = os.environ.get('LLM_API_KEY')
     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
     LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gpt-4o-mini')
+
+    # LLM 默认 max_tokens。
+    # 注意：推理类模型（如 deepseek-v4-flash-free、MiniMax M2 等）会先生成
+    # <think>...</think> 推理链，再输出答案；这部分会消耗大量 token 预算。
+    # 因此默认值设得较大，可通过环境变量 LLM_MAX_TOKENS 覆盖。
+    LLM_MAX_TOKENS = int(os.environ.get('LLM_MAX_TOKENS', '16000'))
     
     # Zep配置
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
